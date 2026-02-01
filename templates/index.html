@@ -1,0 +1,379 @@
+</body>
+<script>
+    document.getElementById('processForm').addEventListener('submit', function(e) {
+        const formData = new FormData(this);
+        console.log('Enviando formulário com:', {
+            'imagem': formData.get('imagem'),
+            'acao': formData.get('acao'),
+            'redes[]': formData.getAll('redes[]')
+        });
+    });
+</script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIZR - resize in seconds</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            background: linear-gradient(45deg, #5D5FEF, #00C4CC);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .tagline {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .upload-area input {
+            display: none;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .options {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .option-group {
+            margin-bottom: 20px;
+        }
+        .option-group h3 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checkbox-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .checkbox-item input {
+            margin-right: 10px;
+        }
+        .custom-dimensions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .custom-dimensions input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .custom-dimensions input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .action-btn.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        .action-btn:hover:not(.active) {
+            border-color: #999;
+        }
+        input[type="radio"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SIZR</h1>
+        <div class="tagline">resize in seconds</div>
+        
+        <form id="processForm" enctype="multipart/form-data" action="/processar" method="POST">
+            <div class="upload-area" id="dropZone">
+                <h2>📁 Arraste sua imagem aqui</h2>
+                <p>ou</p>
+                <input type="file" id="imagemInput" name="imagem" accept="image/*" required>
+                <button class="btn" type="button" onclick="document.getElementById('imagemInput').click()">
+                    📤 Escolher Imagem
+                </button>
+                <p id="fileName" style="margin-top: 10px; color: #666;"></p>
+            </div>
+
+            <div class="options">
+                <div class="option-group">
+                    <h3>🖼️ Qualidade da Imagem</h3>
+                    <label for="qualidade">
+                        Qualidade da imagem:
+                        <span style="font-weight:normal; font-size:0.95em; color:#555;">
+                            <br>JPEG: 100 = máxima qualidade, 80 = boa qualidade, 60 = tamanho reduzido<br>
+                            PNG: 100 = menor compressão (arquivo maior), 10 = máxima compressão (arquivo menor)
+                        </span>
+                    </label>
+                    <input type="range" id="qualidade" name="qualidade" min="10" max="100" value="90" step="1" oninput="atualizaQualidadeLabel()">
+                    <span id="qualidadeValue">90</span>
+                    <span id="qualidadeDescricao" style="margin-left:10px; color:#555; font-size:0.95em;">Alta qualidade</span>
+                </div>
+                <script>
+                function atualizaQualidadeLabel() {
+                    const val = document.getElementById('qualidade').value;
+                    document.getElementById('qualidadeValue').textContent = val;
+                    let desc = '';
+                    if (val >= 90) desc = 'Alta qualidade';
+                    else if (val >= 70) desc = 'Boa qualidade';
+                    else if (val >= 50) desc = 'Qualidade média, tamanho reduzido';
+                    else desc = 'Alta compressão, menor qualidade';
+                    document.getElementById('qualidadeDescricao').textContent = desc;
+                }
+                document.addEventListener('DOMContentLoaded', atualizaQualidadeLabel);
+                </script>
+                <div class="option-group">
+                    <h3>🎯 Ação</h3>
+                    <div class="action-buttons">
+                        <label class="action-btn active" for="acao_redes">
+                            <input type="radio" id="acao_redes" name="acao" value="redes_sociais" checked onclick="toggleOptions('redes')">
+                            📱 Redes Sociais
+                        </label>
+                        <label class="action-btn" for="acao_favicon">
+                            <input type="radio" id="acao_favicon" name="acao" value="favicon" onclick="toggleOptions('favicon')">
+                            ⭐ Favicon
+                        </label>
+                        <label class="action-btn" for="acao_custom">
+                            <input type="radio" id="acao_custom" name="acao" value="customizado" onclick="toggleOptions('custom')">
+                            ✏️ Customizado
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Redes Sociais -->
+                <div id="redesOptions" class="option-group">
+                    <h3>📱 Redes Sociais</h3>
+                    <div class="checkbox-grid">
+                        {% for key, info in redes.items() %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="redes[]" value="{{ key }}" 
+                                   {% if key in ['facebook_post', 'instagram_post', 'twitter_post'] %}checked{% endif %}>
+                            {{ info.nome }}<br>
+                            <small>{{ info.dimensoes[0] }}x{{ info.dimensoes[1] }}</small>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Favicon -->
+                <div id="faviconOptions" class="option-group" style="display: none;">
+                    <h3>⭐ Tamanhos Favicon</h3>
+                    <div class="checkbox-grid">
+                        {% for tamanho in favicons %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="favicons[]" value="{{ tamanho }}" 
+                                   {% if tamanho in [32, 64, 192] %}checked{% endif %}>
+                            {{ tamanho }}x{{ tamanho }} px
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Customizado -->
+                <div id="customOptions" class="option-group" style="display: none;">
+                    <h3>✏️ Dimensões Personalizadas</h3>
+                    <div class="custom-dimensions">
+                        <div>
+                            <label>Largura:</label>
+                            <input type="number" name="largura_custom" id="largura_custom" value="800" min="1">
+                            <select name="largura_unidade" id="largura_unidade">
+                                <option value="px" selected>px</option>
+                                <option value="cm">cm</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Altura:</label>
+                            <input type="number" name="altura_custom" id="altura_custom" value="600" min="1">
+                            <select name="altura_unidade" id="altura_unidade">
+                                <option value="px" selected>px</option>
+                                <option value="cm">cm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label>
+                            <input type="checkbox" name="manter_aspecto" checked>
+                            Manter proporção original
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn" id="processBtn">
+                🚀 Processar Imagem
+            </button>
+        </form>
+        
+        <footer>
+            <p>✨ SIZR - resize in seconds | Open Source | 100% Gratuito</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Toggle opções
+        function toggleOptions(tipo) {
+            document.getElementById('redesOptions').style.display = 'none';
+            document.getElementById('faviconOptions').style.display = 'none';
+            document.getElementById('customOptions').style.display = 'none';
+            
+            if(tipo === 'redes') document.getElementById('redesOptions').style.display = 'block';
+            if(tipo === 'favicon') document.getElementById('faviconOptions').style.display = 'block';
+            if(tipo === 'custom') document.getElementById('customOptions').style.display = 'block';
+            
+            // Atualizar botões ativos
+            document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('active'));
+            if(tipo === 'redes') document.querySelector('[for="acao_redes"]').classList.add('active');
+            if(tipo === 'favicon') document.querySelector('[for="acao_favicon"]').classList.add('active');
+            if(tipo === 'custom') document.querySelector('[for="acao_custom"]').classList.add('active');
+        }
+        
+        // Upload de arquivo
+        const fileInput = document.getElementById('imagemInput');
+        const fileName = document.getElementById('fileName');
+        
+        fileInput.addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                fileName.textContent = e.target.files[0].name;
+            }
+        });
+        
+        // Drag and Drop
+        const dropZone = document.getElementById('dropZone');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.style.borderColor = '#667eea';
+            dropZone.style.backgroundColor = '#f0f4ff';
+        }
+        
+        function unhighlight() {
+            dropZone.style.borderColor = '#ddd';
+            dropZone.style.backgroundColor = '#f9f9f9';
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if(files.length) {
+                fileInput.files = files;
+                fileName.textContent = files[0].name;
+            }
+        }
+    </script>
+</body>
+</html>
