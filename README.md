@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 # 🖼️ SIZR - Redimensione Imagens em Segundos
@@ -122,3 +123,7 @@ Contribuições são bem-vindas! Abra issues ou pull requests.
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT.
+=======
+# SIZR
+**Sizr** é um redimensionador de imagens online, rápido e fácil de usar, que gera imagens no tamanho ideal para redes sociais e favicons. Não precisa instalar nada, nem usar ferramentas complexas — basta arrastar, escolher as opções e baixar.  > **"Redimensione em segundos"** — O Sizr transforma seu fluxo de trabalho de minutos para segundos.
+>>>>>>> 66920ada798118c1db45c46015f3cd0add119237
